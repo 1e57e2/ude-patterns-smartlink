@@ -1,0 +1,17 @@
+@smartlinks_HostAddress = http://localhost:5000
+
+###
+# @no-redirect
+GET {{smartlinks_HostAddress}}
+Accept: application/json
+###
+
+###
+# @no-redirect
+GET {{smartlinks_HostAddress}}/test
+Accept: application/json
+###
+
+###
+GET {{smartlinks_HostAddress}}/api/smartlinks/
+###

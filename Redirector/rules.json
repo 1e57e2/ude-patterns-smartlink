@@ -1,0 +1,53 @@
+[
+  {
+    "LinkPath": "/",
+    "State": "enabled",
+    "Redirects": [
+      {
+        "RedirectUrl": "https://example.org",
+        "Rules": [
+          {
+            "Operation": "Or",
+            "Rules": [
+              {
+                "SubjectName": "CurrentDate",
+                "Predicates": {
+                  "GreaterThan": "2024-11-20",
+                  "LessThan": "2024-11-22"
+                }
+              },
+              {
+                "SubjectName": "Browser",
+                "Predicates": {
+                  "EqualsTo": "Chrome"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "RedirectUrl": "https://example.com",
+        "Rules": [
+          {
+            "Operation": "And",
+            "Rules": [
+              {
+                "SubjectName": "CurrentDate",
+                "Predicates": {
+                  "GreaterThan": "2024-11-21"
+                }
+              },
+              {
+                "SubjectName": "Browser",
+                "Predicates": {
+                  "EqualsTo": "Unknown"
+                }
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+]
