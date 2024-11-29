@@ -1,0 +1,52 @@
+# This workflow will build a .NET project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-net
+
+name: .NET
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Start container and apply migrations
+      run: docker compose -f "docker-compose.yml" up -d --build
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 9.0.x
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Copy ValueProviders
+      run: |
+        mkdir /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/Redirector/bin/Debug/net9.0/ValueProviders
+        mkdir /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/Redirector.Tests/bin/Debug/net9.0/ValueProviders
+        cp /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/ValueProviders/BrowserValueProvider/bin/Debug/net9.0/BrowserValueProvider.dll /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/Redirector/bin/Debug/net9.0/ValueProviders
+        cp /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/ValueProviders/CurrentDateValueProvider/bin/Debug/net9.0/CurrentDateValueProvider.dll /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/Redirector/bin/Debug/net9.0/ValueProviders
+        cp /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/ValueProviders/BrowserValueProvider/bin/Debug/net9.0/BrowserValueProvider.dll /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/Redirector.Tests/bin/Debug/net9.0/ValueProviders
+        cp /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/ValueProviders/CurrentDateValueProvider/bin/Debug/net9.0/CurrentDateValueProvider.dll /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/Redirector.Tests/bin/Debug/net9.0/ValueProviders
+    - name: List test directory
+      run: ls -R /home/runner/work/ude-patterns-smartlink/ude-patterns-smartlink/Redirector.Tests/bin/Debug/net9.0/ValueProviders
+    - name: Test
+      run: dotnet test -p:CollectCoverage=true -p:CoverletOutput=TestResults/ -p:CoverletOutputFormat=opencover --no-build --verbosity normal Redirector.Tests/
+    - name: Create Test Coverage Badge
+      uses: simon-k/dotnet-code-coverage-badge@v1.0.0
+      id: create_coverage_badge
+      with:
+        label: Unit Test Coverage
+        color: brightgreen
+        path: Redirector.Tests/TestResults/coverage.opencover.xml
+        gist-filename: code-coverage.json
+        gist-id: 5ef555ab0f13acfc15925090d010a803
+        gist-auth-token: ${{ secrets.GIST_AUTH_TOKEN }}
+    - name: Stop containers
+      run: docker compose -f "docker-compose.yml" down --remove-orphans --rmi all --volumes
